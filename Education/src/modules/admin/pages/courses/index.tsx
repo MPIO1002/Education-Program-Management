@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import Table from '../../../../components/table';
-import AddCourseModal from './components/add-course.modal'; // Import the modal component
+import AddCourseModal from './components/add-course.modal';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
 import UpdateCourseModal from './components/update-course.modal';
 
 const Courses = () => {
-  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
-  const [refreshTrigger, setRefreshTrigger] = useState(0); // State to trigger table refresh
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false); // State to control UpdateCourseModal visibility
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<{
     id: number;
     tenHp: string;
@@ -18,20 +18,23 @@ const Courses = () => {
     soTietThucHanh: string;
     loaiHp: string;
     hocPhanTienQuyet: string;
-  } | null>(null); // State to store the selected course for updating
-  
+  } | null>(null);
+
+  const [searchParams, setSearchParams] = useState<Record<string, string>>({
+    tenHp: '',
+  });
+
   const columns = [
     { key: 'tenHp', label: 'Tên học phần', style: { width: '210px' } },
-    { key: 'maHp', label: 'Mã học phần', style: undefined },
-    { key: 'soTinChi', label: 'Số tín chỉ', style: undefined },
-    { key: 'soTietLyThuyet', label: 'Số tiết lý thuyết', style: undefined },
-    { key: 'soTietThucHanh', label: 'Số tiết thực hành', style: undefined },
-    { key: 'loaiHp', label: 'Loại học phần', style: undefined },
-    { key: 'hocPhanTienQuyet', label: 'Học phần tiên quyết', style: undefined },
+    { key: 'maHp', label: 'Mã học phần' },
+    { key: 'soTinChi', label: 'Số tín chỉ' },
+    { key: 'soTietLyThuyet', label: 'Số tiết lý thuyết' },
+    { key: 'soTietThucHanh', label: 'Số tiết thực hành' },
+    { key: 'loaiHp', label: 'Loại học phần' },
+    { key: 'hocPhanTienQuyet', label: 'Học phần tiên quyết' },
     {
       key: 'actions',
       label: 'Hành động',
-      style: undefined,
       render: (row: { [key: string]: any }) => (
         <div className="flex justify-center">
           <button
@@ -46,7 +49,7 @@ const Courses = () => {
   ];
 
   const apiEndpoint = 'http://localhost:8080/api/courses';
-  const filterKeys = columns.map((column) => column.key).filter((key) => key !== 'actions'); // Exclude 'actions' from filtering
+  const filterKeys = columns.map((column) => column.key).filter((key) => key !== 'actions');
 
   const handleUpdate = (row: { [key: string]: any }) => {
     setSelectedCourse({
@@ -58,13 +61,12 @@ const Courses = () => {
       soTietThucHanh: row.soTietThucHanh,
       loaiHp: row.loaiHp,
       hocPhanTienQuyet: row.hocPhanTienQuyet,
-    }); // Set the selected course data
-    setIsUpdateModalOpen(true); // Open the UpdateCourseModal
+    });
+    setIsUpdateModalOpen(true);
   };
 
   const handleAddCourse = () => {
-    setRefreshTrigger((prev) => prev + 1); // Increment refresh trigger to refresh the table
-    setIsModalOpen(true); // Open the modal
+    setIsModalOpen(true);
   };
 
   return (
@@ -81,23 +83,34 @@ const Courses = () => {
           </button>
         </div>
       </div>
-      <Table columns={columns} apiEndpoint={apiEndpoint} filterKeys={filterKeys} refreshTrigger={refreshTrigger} />
+
+      {/* Không còn input tìm kiếm ở đây */}
+
+      <Table
+        columns={columns}
+        apiEndpoint={apiEndpoint}
+        filterKeys={filterKeys}
+        refreshTrigger={refreshTrigger} 
+        searchParams={searchParams}        
+      />
+
       {isModalOpen && (
         <AddCourseModal
-          onClose={() => setIsModalOpen(false)} // Close the modal
+          onClose={() => setIsModalOpen(false)}
           onCourseAdded={() => {
-            setIsModalOpen(false); // Close the modal
-            setRefreshTrigger((prev) => prev + 1); // Increment refresh trigger to refresh the table
+            setIsModalOpen(false);
+            setRefreshTrigger((prev) => prev + 1);
           }}
         />
       )}
+
       {isUpdateModalOpen && selectedCourse && (
         <UpdateCourseModal
-          courseData={selectedCourse} // Pass the selected course data to the UpdateCourseModal
-          onClose={() => setIsUpdateModalOpen(false)} // Close the UpdateCourseModal
+          courseData={selectedCourse}
+          onClose={() => setIsUpdateModalOpen(false)}
           onCourseUpdated={() => {
-            setIsUpdateModalOpen(false); // Close the UpdateCourseModal
-            setRefreshTrigger((prev) => prev + 1); // Increment refresh trigger to refresh the table
+            setIsUpdateModalOpen(false);
+            setRefreshTrigger((prev) => prev + 1);
           }}
         />
       )}
