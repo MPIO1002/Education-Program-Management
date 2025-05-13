@@ -6,6 +6,14 @@ import { faPen, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
 import UpdateCourseModal from './components/update-course.modal';
 
 const Courses = () => {
+  const [filter, setFilter] = useState<Record<string, string>>({
+    loaiHp: '',
+  });
+
+  const [searchParams, setSearchParams] = useState<Record<string, string>>({
+    tenHp: '',
+  });
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
@@ -19,10 +27,6 @@ const Courses = () => {
     loaiHp: string;
     hocPhanTienQuyet: string;
   } | null>(null);
-
-  const [searchParams, setSearchParams] = useState<Record<string, string>>({
-    tenHp: '',
-  });
 
   const columns = [
     { key: 'tenHp', label: 'Tên học phần', style: { width: '210px' } },
@@ -84,14 +88,21 @@ const Courses = () => {
         </div>
       </div>
 
-      {/* Không còn input tìm kiếm ở đây */}
-
       <Table
         columns={columns}
         apiEndpoint={apiEndpoint}
         filterKeys={filterKeys}
-        refreshTrigger={refreshTrigger} 
-        searchParams={searchParams}        
+        refreshTrigger={refreshTrigger}
+        searchParams={searchParams}
+        filter={filter}
+        selectFilter={{
+          filterKey: 'loaiHp',
+          options: [
+            { value: '', label: 'Tất cả' },
+            { value: 'Bắt buộc', label: 'Bắt buộc' },
+            { value: 'Tự chọn', label: 'Tự chọn' },
+          ],
+        }}
       />
 
       {isModalOpen && (

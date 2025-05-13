@@ -1,9 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Table from '../../../../components/table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPen } from '@fortawesome/free-solid-svg-icons';
 
 const GroupPlan = () => {
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [searchParams, setSearchParams] = useState<Record<string, string>>({
+    hocPhanName: '',
+  });
   const columns = [
     { key: 'maNhom', label: 'Mã nhóm', style: { width: '80px' } },
     { key: 'hocPhanName', label: 'Tên học phần', style: { width: '200px' } },
@@ -41,7 +45,7 @@ const GroupPlan = () => {
   return (
     <div>
       <h1 className="text-2xl font-bold mb-4">Kế hoạch nhóm</h1>
-      <Table columns={columns} apiEndpoint={apiEndpoint} filterKeys={filterKeys} />
+      <Table columns={columns} apiEndpoint={apiEndpoint} filterKeys={filterKeys} refreshTrigger={refreshTrigger} searchParams={searchParams} />
     </div>
   );
 };

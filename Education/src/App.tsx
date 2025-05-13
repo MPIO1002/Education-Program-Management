@@ -1,15 +1,24 @@
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, useLocation } from 'react-router-dom';
 import Layout from './modules/admin/index';
 import Navigate from './modules/admin/navigate/navigate';
+
+const AppContent = () => {
+  const location = useLocation();
+
+  // Kiểm tra nếu đang ở trang login
+  const isLoginPage = location.pathname === '/login';
+
+  return (
+    <div className="font-family">
+      {isLoginPage ? <Navigate /> : <Layout><Navigate /></Layout>}
+    </div>
+  );
+};
 
 const App = () => {
   return (
     <BrowserRouter>
-      <div className="font-family">
-        <Layout>
-          <Navigate />
-        </Layout>
-      </div>
+      <AppContent />
     </BrowserRouter>
   );
 };

@@ -8,13 +8,12 @@ const Sidebar: React.FC = () => {
 
   const menuItems = [
     { icon: faEnvelope, text: 'Thông tin chung', path: '/general-info' },
-    { icon: faTable, text: 'Khung chương trình', path: '/program-framework' },
     { icon: faBook, text: 'Học phần', path: '/courses' },
     { icon: faScroll, text: 'Đề cương chi tiết', path: '/detailed-syllabus' },
     { icon: faCalendarDays, text: 'Kế hoạch dạy học', path: '/teaching-plan' },
     { icon: faUserGroup, text: 'Kế hoạch mở nhóm', path: '/group-plan' },
     { icon: faPrint, text: 'Mẫu in', path: '/print-templates' },
-    { icon: faChalkboardUser, text: 'Giảng viên', path: '/lecturers' },
+    { icon: faChalkboardUser, text: 'Giảng viên', path: '/teachers' },
   ];
 
   return (

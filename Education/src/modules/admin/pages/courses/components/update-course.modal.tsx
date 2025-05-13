@@ -18,20 +18,23 @@ interface UpdateCourseModalProps {
 
 const UpdateCourseModal: React.FC<UpdateCourseModalProps> = ({ courseData, onClose, onCourseUpdated }) => {
     const [formData, setFormData] = useState(courseData);
-    const [allCourses, setAllCourses] = useState<string[]>([]);
+    const [allCourses, setAllCourses] = useState<{ maHp: string; tenHp: string }[]>([]);
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
 
     useEffect(() => {
         const fetchAllCourses = async () => {
             try {
-                const response = await fetch('http://localhost:8080/api/courses');
+                const response = await fetch('http://localhost:8080/api/courses?page=1&size=100');
                 if (!response.ok) {
                     throw new Error('Failed to fetch courses');
                 }
                 const result = await response.json();
-                const courseCodes = result.result.map((course: { maHp: string }) => course.maHp);
-                setAllCourses(courseCodes || []);
+                const courses = result.listContent.map((course: { maHp: string; tenHp: string }) => ({
+                    maHp: course.maHp,
+                    tenHp: course.tenHp,
+                }));
+                setAllCourses(courses || []);
             } catch (error) {
                 console.error('Error fetching courses:', error);
                 setAllCourses([]);
@@ -48,25 +51,30 @@ const UpdateCourseModal: React.FC<UpdateCourseModalProps> = ({ courseData, onClo
 
         if (name === 'hocPhanTienQuyet' && value.trim() !== '') {
             const filteredSuggestions = allCourses.filter((course) =>
-                course.toLowerCase().includes(value.toLowerCase())
+                course.maHp.toLowerCase().includes(value.toLowerCase())
             );
-            setSuggestions(filteredSuggestions);
+            setSuggestions(filteredSuggestions.map((course) => `${course.maHp} - ${course.tenHp}`));
         } else if (name === 'hocPhanTienQuyet') {
             setSuggestions([]);
         }
     };
 
     const handleSuggestionClick = (suggestion: string) => {
-        setFormData((prev) => ({ ...prev, hocPhanTienQuyet: suggestion }));
+        const selectedMaHp = suggestion.split(' - ')[0]; // Lấy maHp từ chuỗi "maHp - tenHp"
+        setFormData((prev) => ({ ...prev, hocPhanTienQuyet: selectedMaHp })); // Chỉ lưu maHp
         setSuggestions([]);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const { tenHp, maHp, soTinChi, soTietLyThuyet, soTietThucHanh, loaiHp } = formData;
+        const { tenHp, maHp, soTinChi, soTietLyThuyet, soTietThucHanh, loaiHp, hocPhanTienQuyet } = formData;
         if (!tenHp || !maHp || !soTinChi || !soTietLyThuyet || !soTietThucHanh || !loaiHp) {
             setNotification({ message: 'Hãy điền đầy đủ thông tin', type: 'warning' });
+            return;
+        }
+        if (hocPhanTienQuyet && !allCourses.some((course) => `${course.maHp}` === hocPhanTienQuyet)) {
+            setNotification({ message: 'Học phần tiên quyết không tồn tại', type: 'error' });
             return;
         }
 
@@ -196,7 +204,7 @@ const UpdateCourseModal: React.FC<UpdateCourseModalProps> = ({ courseData, onClo
                                 className="border border-gray-300 rounded px-3 py-2 w-full"
                             />
                             {suggestions.length > 0 && (
-                                <ul className="absolute bg-white border border-gray-300 mt-1 max-h-40 w-40 overflow-y-auto z-10">
+                                <ul className="absolute bg-white border border-gray-300 mt-1 max-h-40 w-80 overflow-y-auto z-10">
                                     {suggestions.map((suggestion, index) => (
                                         <li
                                             key={index}
