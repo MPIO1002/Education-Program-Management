@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEnvelope, faTable, faBook, faScroll, faCalendarDays, faUserGroup, faPrint, faChalkboardUser } from '@fortawesome/free-solid-svg-icons';
+import { faEnvelope, faTable, faBook, faScroll, faCalendarDays, faUserGroup, faPrint, faChalkboardUser, faTableCells } from '@fortawesome/free-solid-svg-icons';
 import { Link } from 'react-router-dom';
 
 const Sidebar: React.FC = () => {
@@ -12,6 +12,7 @@ const Sidebar: React.FC = () => {
     { icon: faScroll, text: 'Đề cương chi tiết', path: '/detailed-syllabus' },
     { icon: faCalendarDays, text: 'Kế hoạch dạy học', path: '/teaching-plan' },
     { icon: faUserGroup, text: 'Kế hoạch mở nhóm', path: '/group-plan' },
+    { icon: faTable, text: 'Phân công giảng dạy', path: '/teaching-assignment' },
     { icon: faPrint, text: 'Mẫu in', path: '/print-templates' },
     { icon: faChalkboardUser, text: 'Giảng viên', path: '/teachers' },
   ];

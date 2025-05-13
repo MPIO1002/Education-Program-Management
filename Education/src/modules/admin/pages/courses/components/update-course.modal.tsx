@@ -73,6 +73,16 @@ const UpdateCourseModal: React.FC<UpdateCourseModalProps> = ({ courseData, onClo
             setNotification({ message: 'Hãy điền đầy đủ thông tin', type: 'warning' });
             return;
         }
+        if (allCourses.some((course) => course.tenHp === tenHp)) {
+            setNotification({ message: 'Tên học phần đã tồn tại', type: 'error' });
+            return;
+        }
+
+        if (allCourses.some((course) => course.maHp === maHp)) {
+            setNotification({ message: 'Mã học phần đã tồn tại', type: 'error' });
+            return;
+        }
+
         if (hocPhanTienQuyet && !allCourses.some((course) => `${course.maHp}` === hocPhanTienQuyet)) {
             setNotification({ message: 'Học phần tiên quyết không tồn tại', type: 'error' });
             return;

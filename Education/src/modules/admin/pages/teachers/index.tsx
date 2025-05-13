@@ -5,17 +5,19 @@ import { faPen, faSquarePlus, faChartBar } from '@fortawesome/free-solid-svg-ico
 import AddTeacherModal from './components/add-teachers.modal';
 import UpdateTeacherModal from './components/update-teachers.modal';
 import { Bar } from 'react-chartjs-2';
+import { Pie } from 'react-chartjs-2';
 import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Title,
-    Tooltip,
-    Legend,
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
 } from 'chart.js';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, ArcElement, Title, Tooltip, Legend);
 
 const Teachers = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -23,6 +25,8 @@ const Teachers = () => {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [isStatisticsModalOpen, setIsStatisticsModalOpen] = useState(false);
   const [statisticsData, setStatisticsData] = useState<{ [key: string]: number } | null>(null);
+  const [activeTab, setActiveTab] = useState<'department' | 'degree'>('department');
+  const [degreeStatisticsData, setDegreeStatisticsData] = useState<{ [key: string]: number } | null>(null);
   const [selectedTeacher, setSelectedTeacher] = useState<{
     id: number;
     maGv: string;
@@ -36,12 +40,12 @@ const Teachers = () => {
   } | null>(null);
 
   const [filter, setFilter] = useState<Record<string, string>>({
-      trinhDo: '',
-    });
+    trinhDo: '',
+  });
 
   const [searchParams, setSearchParams] = useState<Record<string, string>>({
-      hoTen: '',
-    });
+    hoTen: '',
+  });
 
   const columns = [
     { key: 'maGv', label: 'Mã GV', style: { width: '100px' } },
@@ -100,14 +104,24 @@ const Teachers = () => {
 
   const handleStatistics = async () => {
     try {
-      const response = await fetch('http://localhost:8080/api/teachers/statistics/department');
-      const data = await response.json();
+      const departmentResponse = await fetch('http://localhost:8080/api/teachers/statistics/department');
+      const departmentData = await departmentResponse.json();
 
-      if (!response.ok || !data.sucess) {
-        throw new Error(data.message || 'Failed to fetch statistics');
+      if (!departmentResponse.ok || !departmentData.sucess) {
+        throw new Error(departmentData.message || 'Failed to fetch department statistics');
       }
 
-      setStatisticsData(data.result);
+      setStatisticsData(departmentData.result);
+
+      const degreeResponse = await fetch('http://localhost:8080/api/teachers/statistics/degree');
+      const degreeData = await degreeResponse.json();
+
+      if (!degreeResponse.ok || !degreeData.sucess) {
+        throw new Error(degreeData.message || 'Failed to fetch degree statistics');
+      }
+
+      setDegreeStatisticsData(degreeData.result);
+
       setIsStatisticsModalOpen(true);
     } catch (error) {
       console.error('Error fetching statistics:', error);
@@ -174,7 +188,7 @@ const Teachers = () => {
         />
       )}
 
-      {isStatisticsModalOpen && statisticsData && (
+      {isStatisticsModalOpen && (statisticsData || degreeStatisticsData) && (
         <div
           id="modal-overlay"
           className="fixed inset-0 bg-[#0000003b] flex items-center justify-center"
@@ -184,30 +198,76 @@ const Teachers = () => {
             className="bg-white p-6 rounded shadow-lg w-2/3"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="text-xl font-bold mb-4">Thống kê giảng viên theo bộ môn</h2>
-            <Bar
-              data={{
-                labels: Object.keys(statisticsData),
-                datasets: [
-                  {
-                    label: 'Số lượng giảng viên',
-                    data: Object.values(statisticsData),
-                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
-                    borderColor: 'rgba(75, 192, 192, 1)',
-                    borderWidth: 1,
+            <h2 className="text-xl font-bold mb-4">Thống kê giảng viên</h2>
+            <div className="flex gap-4 mb-4">
+              <button
+                className={`px-4 py-2 rounded cursor-pointer ${activeTab === 'department' ? 'bg-[#1b4587] text-white' : 'bg-gray-200 text-black'}`}
+                onClick={() => setActiveTab('department')}
+              >
+                Theo bộ môn
+              </button>
+              <button
+                className={`px-4 py-2 rounded cursor-pointer ${activeTab === 'degree' ? 'bg-[#1b4587] text-white' : 'bg-gray-200 text-black'}`}
+                onClick={() => setActiveTab('degree')}
+              >
+                Theo trình độ
+              </button>
+            </div>
+
+            {activeTab === 'department' && statisticsData && (
+              <Bar
+                data={{
+                  labels: Object.keys(statisticsData),
+                  datasets: [
+                    {
+                      label: 'Số lượng giảng viên',
+                      data: Object.values(statisticsData),
+                      backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                      borderColor: 'rgba(75, 192, 192, 1)',
+                      borderWidth: 1,
+                    },
+                  ],
+                }}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    legend: {
+                      display: true,
+                      position: 'top',
+                    },
                   },
-                ],
-              }}
-              options={{
-                responsive: true,
-                plugins: {
-                  legend: {
-                    display: true,
-                    position: 'top',
-                  },
-                },
-              }}
-            />
+                }}
+              />
+            )}
+
+            {activeTab === 'degree' && degreeStatisticsData && (
+              <div className="flex justify-center">
+                <Pie
+                  data={{
+                    labels: Object.keys(degreeStatisticsData),
+                    datasets: [
+                      {
+                        label: 'Số lượng giảng viên',
+                        data: Object.values(degreeStatisticsData),
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                        hoverBackgroundColor: ['#FF6384', '#36A2EB', '#FFCE56'],
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: false,
+                    plugins: {
+                      legend: {
+                        display: true,
+                        position: 'top',
+                      },
+                    },
+                  }}
+                  width={500}
+                  height={500}
+                />
+              </div>
+            )}
           </div>
         </div>
       )}

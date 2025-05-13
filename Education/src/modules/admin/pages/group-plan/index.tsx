@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Table from '../../../../components/table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPen } from '@fortawesome/free-solid-svg-icons';
+import { faPen, faSquarePlus } from '@fortawesome/free-solid-svg-icons';
 
 const GroupPlan = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -11,16 +11,16 @@ const GroupPlan = () => {
   const columns = [
     { key: 'maNhom', label: 'Mã nhóm', style: { width: '80px' } },
     { key: 'hocPhanName', label: 'Tên học phần', style: { width: '200px' } },
-    { key: 'namHoc', label: 'Năm học', style: { width: '100px' } },
+    { key: 'namHoc', label: 'Năm học', style: { width: '200px' } },
     { key: 'hocKy', label: 'HK', style: { width: '30px' } },
     { key: 'soLuongSv', label: 'SV', style: { width: '30px' } },
-    { key: 'thoiGianBatDau', label: 'Thời gian bắt đầu', style: { width: '150px' } },
-    { key: 'thoiGianKetThuc', label: 'Thời gian kết thúc', style: { width: '150px' } },
-    { key: 'trangThai', label: 'Trạng thái', style: { width: '120px' } },
+    { key: 'thoiGianBatDau', label: 'Thời gian bắt đầu', style: { width: '200px' } },
+    { key: 'thoiGianKetThuc', label: 'Thời gian kết thúc', style: { width: '200px' } },
+    { key: 'trangThai', label: 'Trạng thái', style: { width: '200px' } },
     {
       key: 'actions',
       label: 'Hành động',
-      style: { width: '110px' },
+      style: { width: '150px' },
       render: (row: { [key: string]: any }) => (
         <div className="flex justify-center">
           <button
@@ -44,7 +44,17 @@ const GroupPlan = () => {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-4">Kế hoạch nhóm</h1>
+      <div className="flex justify-between items-center">
+              <h1 className="text-2xl font-bold mb-4">Kế hoạch mở nhóm</h1>
+              <div className="mb-4">
+                <button
+                  className="bg-[#333333] text-white font-bold px-4 py-2 rounded flex items-center gap-2 cursor-pointer"
+                >
+                  <FontAwesomeIcon icon={faSquarePlus} />
+                  Thêm
+                </button>
+              </div>
+            </div>
       <Table columns={columns} apiEndpoint={apiEndpoint} filterKeys={filterKeys} refreshTrigger={refreshTrigger} searchParams={searchParams} />
     </div>
   );

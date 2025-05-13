@@ -7,6 +7,9 @@ import UpdateTeachingPlanModal from './components/update-teaching-plan.modal'; /
 
 const TeachingPlan = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [filter, setFilter] = useState<Record<string, string>>({
+      hocKy: '',
+    });
   const [searchParams, setSearchParams] = useState<Record<string, string>>({
     tenHp: '',
   });
@@ -83,6 +86,17 @@ const TeachingPlan = () => {
         filterKeys={filterKeys}
         refreshTrigger={refreshTrigger}
         searchParams={searchParams}
+        filter={filter}
+                                selectFilter={{
+                  filterKey: 'hocKy',
+                  options: [
+                    { value: '', label: 'Tất cả' },
+                    ...Array.from({ length: 10 }, (_, i) => ({
+                      value: (i + 1).toString(),
+                      label: (i + 1).toString(),
+                    })),
+                  ],
+                }}
       />
 
       {isAddModalOpen && (

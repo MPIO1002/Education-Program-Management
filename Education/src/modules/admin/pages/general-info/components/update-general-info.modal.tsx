@@ -51,10 +51,28 @@ const UpdateGeneralInfoModal: React.FC<UpdateGeneralInfoModalProps> = ({ id, onC
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
 
-    const handleSubmit = async (e: React.FormEvent) => {
+        const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
+    
+        const { maCtdt, tenCtdt, nganh, maNganh, khoaQuanLy, heDaoTao, trinhDo, tongTinChi, thoiGianDaoTao, namBanHanh, trangThai } = formData;
+    
+        // Kiểm tra các trường bắt buộc
+        if (!maCtdt || !tenCtdt || !nganh || !maNganh || !khoaQuanLy || !heDaoTao || !trinhDo || !tongTinChi || !thoiGianDaoTao || !namBanHanh || !trangThai) {
+            setNotification({ message: 'Hãy điền đầy đủ thông tin', type: 'warning' });
+            return;
+        }
+    
         try {
+            // Kiểm tra xem `maCtdt` đã tồn tại chưa (ngoại trừ chính nó)
+            const checkResponse = await fetch(`http://localhost:8080/api/general-info/check?maCtdt=${maCtdt}`);
+            const checkResult = await checkResponse.json();
+    
+            if (!checkResponse.ok || (checkResult.exists && checkResult.id !== formData.id)) {
+                setNotification({ message: 'Mã CTĐT đã tồn tại', type: 'error' });
+                return;
+            }
+    
+            // Gửi dữ liệu nếu `maCtdt` chưa tồn tại hoặc là của chính nó
             const response = await fetch(`http://localhost:8080/api/general-info/${formData.id}`, {
                 method: 'PUT',
                 headers: {
@@ -62,15 +80,15 @@ const UpdateGeneralInfoModal: React.FC<UpdateGeneralInfoModalProps> = ({ id, onC
                 },
                 body: JSON.stringify(formData),
             });
-
+    
             const result = await response.json();
-
+    
             if (!response.ok) {
                 throw new Error(result.message || 'Failed to update general info');
             }
-
+    
             setNotification({ message: result.message || 'Cập nhật thông tin chung thành công!', type: 'success' });
-
+    
             setTimeout(() => {
                 onGeneralInfoUpdated(); // Notify parent to refresh the table
                 onClose(); // Close the modal
@@ -78,7 +96,7 @@ const UpdateGeneralInfoModal: React.FC<UpdateGeneralInfoModalProps> = ({ id, onC
         } catch (error: any) {
             console.error('Error updating general info:', error);
             setNotification({ message: error.message || 'Cập nhật thất bại. Vui lòng thử lại.', type: 'error' });
-
+    
             setTimeout(() => {
                 setNotification(null);
             }, 3000);

@@ -9,8 +9,10 @@ import TeachingPlan from '../pages/teaching-plan';
 import GroupPlan from '../pages/group-plan';
 import PrintTemplates from '../pages/print';
 import Teachers from '../pages/teachers';
+import TeachingAssignment from '../pages/teaching-assignment';
 import Login from '../../auth/login';
 import ProtectedRoute from '../../../components/protected-route';
+
 
 const Navigate: React.FC = () => {
   const location = useLocation();
@@ -66,6 +68,14 @@ const Navigate: React.FC = () => {
               element={
                 <ProtectedRoute>
                   <GroupPlan />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/teaching-assignment"
+              element={
+                <ProtectedRoute>
+                  <TeachingAssignment />
                 </ProtectedRoute>
               }
             />
