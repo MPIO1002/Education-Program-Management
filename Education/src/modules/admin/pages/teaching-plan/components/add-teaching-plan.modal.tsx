@@ -8,41 +8,38 @@ interface AddTeachingPlanModalProps {
 
 const AddTeachingPlanModal: React.FC<AddTeachingPlanModalProps> = ({ onClose, onTeachingPlanAdded }) => {
     const [formData, setFormData] = useState({
-        maHp: '',
-        tenHp: '',
-        soTinChi: '',
+        generalInfoId: 0,
+        courseId: 0,
         hocKy: '',
-        maHpTruoc: '',
+        namHoc: '',
     });
 
-    const [allCourses, setAllCourses] = useState<{ maHp: string; tenHp: string }[]>([]);
-    const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [isLoadingCourses, setIsLoadingCourses] = useState(true);
+    const [generalInfoList, setGeneralInfoList] = useState<{ id: number; tenCtdt: string }[]>([]);
+    const [courseName, setCourseName] = useState('');
     const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
+    const [debounceTimeout, setDebounceTimeout] = useState<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
-        const fetchAllCourses = async () => {
-            setIsLoadingCourses(true);
+        // Fetch danh sách CTDT
+        const fetchGeneralInfo = async () => {
             try {
-                const response = await fetch('http://localhost:8080/api/courses?page=1&size=100');
+                const response = await fetch('http://localhost:8080/api/general-info?page=1&size=100');
                 if (!response.ok) {
-                    throw new Error('Failed to fetch courses');
+                    throw new Error('Failed to fetch general info');
                 }
                 const result = await response.json();
-                const courses = result.listContent.map((course: { maHp: string; tenHp: string }) => ({
-                    maHp: course.maHp,
-                    tenHp: course.tenHp,
+                const generalInfo = result.listContent.map((info: { id: number; tenCtdt: string }) => ({
+                    id: info.id,
+                    tenCtdt: info.tenCtdt,
                 }));
-                setAllCourses(courses || []);
+                setGeneralInfoList(generalInfo || []);
             } catch (error) {
-                console.error('Error fetching courses:', error);
-                setAllCourses([]);
-            } finally {
-                setIsLoadingCourses(false);
+                console.error('Error fetching general info:', error);
+                setGeneralInfoList([]);
             }
         };
 
-        fetchAllCourses();
+        fetchGeneralInfo();
     }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -50,32 +47,47 @@ const AddTeachingPlanModal: React.FC<AddTeachingPlanModalProps> = ({ onClose, on
 
         setFormData((prev) => ({ ...prev, [name]: value }));
 
-        if (name === 'maHpTruoc' && value.trim() !== '') {
-            const filteredSuggestions = allCourses.filter((course) =>
-                course.maHp.toLowerCase().includes(value.toLowerCase())
-            );
-            setSuggestions(filteredSuggestions.map((course) => `${course.maHp} - ${course.tenHp}`));
-        } else if (name === 'maHpTruoc') {
-            setSuggestions([]);
-        }
-    };
+        if (name === 'maHp') {
+            // Clear previous timeout
+            if (debounceTimeout) {
+                clearTimeout(debounceTimeout);
+            }
 
-    const handleSuggestionClick = (suggestion: string) => {
-        const selectedMaHp = suggestion.split(' - ')[0]; // Lấy maHp từ chuỗi "maHp - tenHp"
-        setFormData((prev) => ({ ...prev, maHpTruoc: selectedMaHp })); // Chỉ lưu maHp
-        setSuggestions([]);
+            // Set a new timeout
+            const timeout = setTimeout(async () => {
+                try {
+                    const response = await fetch(`http://localhost:8080/api/courses/code/${value}`);
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch course by code');
+                    }
+                    const result = await response.json();
+                    if (result.sucess && result.result) {
+                        setFormData((prev) => ({ ...prev, courseId: result.result.id }));
+                        setCourseName(result.result.tenHp); // Hiển thị tên học phần
+                    } else {
+                        // Xử lý khi không tìm thấy học phần
+                        setNotification({ message: 'Không tìm thấy học phần', type: 'warning' });
+                        setCourseName('');
+                        setFormData((prev) => ({ ...prev, courseId: 0 }));
+                    }
+                } catch (error) {
+                    console.error('Error fetching course by code:', error);
+                    setNotification({ message: 'Lỗi khi lấy thông tin học phần', type: 'error' });
+                    setCourseName('');
+                    setFormData((prev) => ({ ...prev, courseId: 0 }));
+                }
+            }, 500); // Chờ 500ms trước khi gọi API
+
+            setDebounceTimeout(timeout);
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
-        const { maHp, tenHp, soTinChi, hocKy, maHpTruoc } = formData;
-        if (!maHp || !tenHp || !soTinChi || !hocKy) {
+        const { generalInfoId, courseId, hocKy, namHoc } = formData;
+        if (!generalInfoId || !courseId || !hocKy || !namHoc) {
             setNotification({ message: 'Hãy điền đầy đủ thông tin', type: 'warning' });
-            return;
-        }
-        if (maHpTruoc && !allCourses.some((course) => `${course.maHp}` === maHpTruoc)) {
-            setNotification({ message: 'Mã học phần trước không tồn tại', type: 'error' });
             return;
         }
 
@@ -85,7 +97,12 @@ const AddTeachingPlanModal: React.FC<AddTeachingPlanModalProps> = ({ onClose, on
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify({
+                    generalInfoId,
+                    courseId,
+                    hocKy: parseInt(hocKy, 10),
+                    namHoc: parseInt(namHoc, 10),
+                }),
             });
 
             const result = await response.json();
@@ -94,7 +111,7 @@ const AddTeachingPlanModal: React.FC<AddTeachingPlanModalProps> = ({ onClose, on
                 throw new Error(result.message || 'Failed to add teaching plan');
             }
 
-            setNotification({ message: result.message || 'Teaching plan added successfully!', type: 'success' });
+            setNotification({ message: 'Thêm kế hoạch dạy học thành công!', type: 'success' });
 
             setTimeout(() => {
                 onTeachingPlanAdded(); // Notify parent to refresh the table
@@ -102,7 +119,7 @@ const AddTeachingPlanModal: React.FC<AddTeachingPlanModalProps> = ({ onClose, on
             }, 2000);
         } catch (error: any) {
             console.error('Error adding teaching plan:', error);
-            setNotification({ message: error.message || 'Failed to add teaching plan. Please try again.', type: 'error' });
+            setNotification({ message: error.message || 'Thêm kế hoạch dạy học thất bại. Vui lòng thử lại.', type: 'error' });
 
             setTimeout(() => {
                 setNotification(null);
@@ -127,11 +144,27 @@ const AddTeachingPlanModal: React.FC<AddTeachingPlanModalProps> = ({ onClose, on
                     <h2 className="text-xl font-bold mb-4">Thêm kế hoạch dạy học</h2>
                     <form onSubmit={handleSubmit}>
                         <div className="mb-4">
+                            <label className="block text-sm font-medium mb-1">Chương trình đào tạo</label>
+                            <select
+                                name="generalInfoId"
+                                value={formData.generalInfoId}
+                                onChange={handleChange}
+                                className="border border-gray-300 rounded px-3 py-2 w-full"
+                                required
+                            >
+                                <option value={0}>Chọn CTĐT</option>
+                                {generalInfoList.map((info) => (
+                                    <option key={info.id} value={info.id}>
+                                        {info.tenCtdt}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <div className="mb-4">
                             <label className="block text-sm font-medium mb-1">Mã học phần</label>
                             <input
                                 type="text"
                                 name="maHp"
-                                value={formData.maHp}
                                 onChange={handleChange}
                                 className="border border-gray-300 rounded px-3 py-2 w-full"
                                 required
@@ -141,28 +174,15 @@ const AddTeachingPlanModal: React.FC<AddTeachingPlanModalProps> = ({ onClose, on
                             <label className="block text-sm font-medium mb-1">Tên học phần</label>
                             <input
                                 type="text"
-                                name="tenHp"
-                                value={formData.tenHp}
-                                onChange={handleChange}
-                                className="border border-gray-300 rounded px-3 py-2 w-full"
-                                required
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-sm font-medium mb-1">Số tín chỉ</label>
-                            <input
-                                type="number"
-                                name="soTinChi"
-                                value={formData.soTinChi}
-                                onChange={handleChange}
-                                className="border border-gray-300 rounded px-3 py-2 w-full"
-                                required
+                                value={courseName}
+                                readOnly
+                                className="border border-gray-300 rounded px-3 py-2 w-full bg-gray-100"
                             />
                         </div>
                         <div className="mb-4">
                             <label className="block text-sm font-medium mb-1">Học kỳ</label>
                             <input
-                                type="text"
+                                type="number"
                                 name="hocKy"
                                 value={formData.hocKy}
                                 onChange={handleChange}
@@ -171,27 +191,15 @@ const AddTeachingPlanModal: React.FC<AddTeachingPlanModalProps> = ({ onClose, on
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-sm font-medium mb-1">Mã học phần trước</label>
+                            <label className="block text-sm font-medium mb-1">Năm học</label>
                             <input
-                                type="text"
-                                name="maHpTruoc"
-                                value={formData.maHpTruoc}
+                                type="number"
+                                name="namHoc"
+                                value={formData.namHoc}
                                 onChange={handleChange}
                                 className="border border-gray-300 rounded px-3 py-2 w-full"
+                                required
                             />
-                            {suggestions.length > 0 && (
-                                <ul className="absolute bg-white border border-gray-300 mt-1 max-h-40 w-80 overflow-y-auto z-10">
-                                    {suggestions.map((suggestion, index) => (
-                                        <li
-                                            key={index}
-                                            className="px-3 py-2 cursor-pointer hover:bg-gray-200"
-                                            onClick={() => handleSuggestionClick(suggestion)}
-                                        >
-                                            {suggestion}
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
                         </div>
                         <div className="flex gap-2">
                             <button

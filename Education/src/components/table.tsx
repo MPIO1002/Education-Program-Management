@@ -26,6 +26,7 @@ interface TableProps {
     searchParams: Record<string, string>;
     canSearch?: boolean;
     finishLoadingCallback?: (data: any) => void;
+    transformResponse?: (data: any[]) => any[];
 }
 
 const Table: React.FC<TableProps> = ({
@@ -39,10 +40,11 @@ const Table: React.FC<TableProps> = ({
     fetchApiEndPoint,
     canSearch = true,
     finishLoadingCallback: isFinishLoading
+    transformResponse,
 }) => {
     const [notification, setNotification] = React.useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
     const {
-        data,
+        data: rawData,
         isLoading,
         hasError,
         currentPage,
@@ -65,6 +67,7 @@ const Table: React.FC<TableProps> = ({
         },
         fetchApiEndPoint,
     });
+    const data = transformResponse ? transformResponse(rawData) : rawData;
     const [tempSearchTerm, setTempSearchTerm] = React.useState(searchParams[Object.keys(searchParams)[0]] || '');
     const debouncedSearchTerm = useDebounce(tempSearchTerm, 500);
 
