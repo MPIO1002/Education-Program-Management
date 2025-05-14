@@ -9,8 +9,8 @@ const GroupPlan = () => {
     hocPhanName: '',
   });
   const columns = [
-    { key: 'maNhom', label: 'Mã nhóm', style: { width: '80px' } },
-    { key: 'hocPhanName', label: 'Tên học phần', style: { width: '200px' } },
+    { key: 'maNhom', label: 'Mã nhóm', style: { width: '150px' } },
+    { key: 'hocPhanName', label: 'Tên học phần' },
     { key: 'namHoc', label: 'Năm học', style: { width: '200px' } },
     { key: 'hocKy', label: 'HK', style: { width: '30px' } },
     { key: 'soLuongSv', label: 'SV', style: { width: '30px' } },

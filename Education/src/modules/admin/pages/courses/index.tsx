@@ -29,13 +29,13 @@ const Courses = () => {
   } | null>(null);
 
   const columns = [
-    { key: 'tenHp', label: 'Tên học phần', style: { width: '210px' } },
-    { key: 'maHp', label: 'Mã học phần' },
-    { key: 'soTinChi', label: 'Số tín chỉ' },
-    { key: 'soTietLyThuyet', label: 'Số tiết lý thuyết' },
-    { key: 'soTietThucHanh', label: 'Số tiết thực hành' },
-    { key: 'loaiHp', label: 'Loại học phần' },
-    { key: 'hocPhanTienQuyet', label: 'Học phần tiên quyết' },
+    { key: 'tenHp', label: 'Tên học phần' },
+    { key: 'maHp', label: 'Mã học phần', style: { width: '150px' } },
+    { key: 'soTinChi', label: 'Số tín chỉ', style: { width: '150px' } },
+    { key: 'soTietLyThuyet', label: 'Số tiết lý thuyết', style: { width: '200px' } },
+    { key: 'soTietThucHanh', label: 'Số tiết thực hành', style: { width: '200px' } },
+    { key: 'loaiHp', label: 'Loại học phần', style: { width: '200px' } },
+    { key: 'hocPhanTienQuyet', label: 'Học phần tiên quyết', style: { width: '230px' } },
     {
       key: 'actions',
       label: 'Hành động',

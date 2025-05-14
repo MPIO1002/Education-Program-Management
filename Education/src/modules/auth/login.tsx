@@ -13,7 +13,7 @@ const Login = () => {
 
         try {
             // Gọi API để lấy danh sách tài khoản
-            const response = await fetch('http://localhost:8080/accounts');
+            const response = await fetch('http://localhost:8080/api/accounts');
             const data = await response.json();
             console.log(data);
 
