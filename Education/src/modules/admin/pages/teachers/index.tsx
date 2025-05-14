@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import Table from '../../../../components/table';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPen, faSquarePlus, faChartBar } from '@fortawesome/free-solid-svg-icons';
+import { faPen, faSquarePlus, faChartBar, faFileImport, faFileExport } from '@fortawesome/free-solid-svg-icons';
 import AddTeacherModal from './components/add-teachers.modal';
 import UpdateTeacherModal from './components/update-teachers.modal';
 import { Bar } from 'react-chartjs-2';
 import { Pie } from 'react-chartjs-2';
+import Notification from '../../../../components/notification';
+
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -27,6 +29,7 @@ const Teachers = () => {
   const [statisticsData, setStatisticsData] = useState<{ [key: string]: number } | null>(null);
   const [activeTab, setActiveTab] = useState<'department' | 'degree'>('department');
   const [degreeStatisticsData, setDegreeStatisticsData] = useState<{ [key: string]: number } | null>(null);
+  const [notification, setNotification] = useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
   const [selectedTeacher, setSelectedTeacher] = useState<{
     id: number;
     maGv: string;
@@ -37,6 +40,7 @@ const Teachers = () => {
     chuyenMon: string;
     trangThai: string;
     namSinh: string;
+    accountId: number;
   } | null>(null);
 
   const [filter, setFilter] = useState<Record<string, string>>({
@@ -94,6 +98,7 @@ const Teachers = () => {
       chuyenMon: row.chuyenMon,
       trangThai: row.trangThai,
       namSinh: row.namSinh ? new Date(row.namSinh).toISOString().split('T')[0] : '',
+      accountId: row.accountId, // Thêm accountId
     });
     setIsUpdateModalOpen(true);
   };
@@ -128,6 +133,56 @@ const Teachers = () => {
     }
   };
 
+  const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('http://localhost:8080/api/teachers/import', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to import file');
+      }
+
+      setNotification({ message: 'Import thành công!', type: 'success' });
+      setRefreshTrigger((prev) => prev + 1); // Làm mới bảng
+    } catch (error) {
+      console.error('Error importing file:', error);
+      setNotification({ message: 'Lỗi khi import file!', type: 'error' });
+    }
+  };
+
+  const handleExport = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/api/teachers/export', {
+        method: 'GET',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to export file');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'teachers.xlsx';
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      setNotification({ message: 'Export thành công!', type: 'success' });
+    } catch (error) {
+      console.error('Error exporting file:', error);
+      setNotification({ message: 'Lỗi khi export file!', type: 'error' });
+    }
+  };
+
   return (
     <div>
       <div className="flex justify-between items-center">
@@ -147,6 +202,27 @@ const Teachers = () => {
             <FontAwesomeIcon icon={faChartBar} />
             Thống kê
           </button>
+          <button
+            className="bg-yellow-500 text-white font-bold px-4 py-2 rounded flex items-center gap-2 cursor-pointer"
+            onClick={handleExport}
+          >
+            <FontAwesomeIcon icon={faFileExport} />
+            Export Excel
+          </button>
+          <label
+            htmlFor="import-file"
+            className="bg-blue-500 text-white font-bold px-4 py-2 rounded flex items-center gap-2 cursor-pointer"
+          >
+            <FontAwesomeIcon icon={faFileImport} />
+            Import Excel
+            <input
+              id="import-file"
+              type="file"
+              accept=".xlsx, .xls"
+              className="hidden"
+              onChange={handleImport}
+            />
+          </label>
         </div>
       </div>
 
@@ -269,6 +345,15 @@ const Teachers = () => {
               </div>
             )}
           </div>
+        </div>
+      )}
+      {notification && (
+        <div className="fixed bottom-4 right-4">
+          <Notification
+            message={notification.message}
+            type={notification.type}
+            onClose={() => setNotification(null)} // Đóng thông báo khi người dùng nhấn nút đóng
+          />
         </div>
       )}
     </div>

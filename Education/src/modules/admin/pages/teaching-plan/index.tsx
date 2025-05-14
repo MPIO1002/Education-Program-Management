@@ -8,8 +8,8 @@ import UpdateTeachingPlanModal from './components/update-teaching-plan.modal'; /
 const TeachingPlan = () => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [filter, setFilter] = useState<Record<string, string>>({
-      hocKy: '',
-    });
+    hocKy: '',
+  });
   const [searchParams, setSearchParams] = useState<Record<string, string>>({
     tenHp: '',
   });
@@ -22,7 +22,8 @@ const TeachingPlan = () => {
     soTinChi: string;
     hocKy: string;
     maHpTruoc: string;
-  } | null>(null);
+
+  } | null>(null); 
 
   const columns = [
     { key: 'maHp', label: 'Mã học phần', style: { width: '150px' } },
@@ -87,16 +88,16 @@ const TeachingPlan = () => {
         refreshTrigger={refreshTrigger}
         searchParams={searchParams}
         filter={filter}
-                                selectFilter={{
-                  filterKey: 'hocKy',
-                  options: [
-                    { value: '', label: 'Tất cả' },
-                    ...Array.from({ length: 10 }, (_, i) => ({
-                      value: (i + 1).toString(),
-                      label: (i + 1).toString(),
-                    })),
-                  ],
-                }}
+        selectFilter={{
+          filterKey: 'hocKy',
+          options: [
+            { value: '', label: 'Tất cả' },
+            ...Array.from({ length: 10 }, (_, i) => ({
+              value: (i + 1).toString(),
+              label: (i + 1).toString(),
+            })),
+          ],
+        }}
       />
 
       {isAddModalOpen && (
@@ -109,7 +110,7 @@ const TeachingPlan = () => {
         />
       )}
 
-      {isUpdateModalOpen && selectedTeachingPlan && (
+      {/* {isUpdateModalOpen && selectedTeachingPlan && (
         <UpdateTeachingPlanModal
           teachingPlanData={selectedTeachingPlan}
           onClose={() => setIsUpdateModalOpen(false)}
@@ -118,7 +119,7 @@ const TeachingPlan = () => {
             setRefreshTrigger((prev) => prev + 1);
           }}
         />
-      )}
+      )} */}
     </div>
   );
 };

@@ -23,6 +23,7 @@ interface TableProps {
         options: Array<{ value: string; label: string }>;
     };
     searchParams: Record<string, string>;
+    transformResponse?: (data: any[]) => any[];
 }
 
 const Table: React.FC<TableProps> = ({
@@ -33,10 +34,11 @@ const Table: React.FC<TableProps> = ({
     selectFilter,
     searchParams: initialSearchParams,
     refreshTrigger,
+    transformResponse,
 }) => {
     const [notification, setNotification] = React.useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
     const {
-        data,
+        data: rawData,
         isLoading,
         hasError,
         currentPage,
@@ -58,6 +60,7 @@ const Table: React.FC<TableProps> = ({
             setNotification({ message, type }); // Lưu thông báo vào state
         },
     });
+    const data = transformResponse ? transformResponse(rawData) : rawData;
     const [tempSearchTerm, setTempSearchTerm] = React.useState(searchParams[Object.keys(searchParams)[0]] || '');
     const debouncedSearchTerm = useDebounce(tempSearchTerm, 500);
 
