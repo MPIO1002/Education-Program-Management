@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 
 interface UseTableProps {
   apiEndpoint: string;
+  fetchApiEndPoint?: string;
   filterKeys: string[];
   initialSearchParams?: Record<string, string>; // ✅ đổi từ searchParams -> initialSearchParams
   refreshTrigger?: any;
@@ -30,6 +31,7 @@ export const useTable = <T extends { id: number }>({
   initialSearchParams = {},
   refreshTrigger,
   onNotify,
+  fetchApiEndPoint,
 }: UseTableProps): UseTableReturn<T> => {
   const [data, setData] = useState<T[]>([]);
   const [searchParams, setSearchParams] = useState<Record<string, string>>(initialSearchParams); // ✅ useState ở đây
@@ -52,9 +54,11 @@ export const useTable = <T extends { id: number }>({
       };
 
       const hasSearch = Object.values(searchParams).some((v) => v.trim() !== '');
+      let endPoint = fetchApiEndPoint ? fetchApiEndPoint : apiEndpoint
 
       if (hasSearch) {
-        response = await fetch(`${apiEndpoint}/search`, {
+
+        response = await fetch(`${endPoint}/search`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -68,7 +72,7 @@ export const useTable = <T extends { id: number }>({
           size: String(rowsPerPage),
         }).toString();
 
-        response = await fetch(`${apiEndpoint}?${queryParams}`, {
+        response = await fetch(`${endPoint}?${queryParams}`, {
           method: 'GET',
           headers: { 'Content-Type': 'application/json' },
         });
@@ -90,7 +94,7 @@ export const useTable = <T extends { id: number }>({
 
   useEffect(() => {
     fetchData();
-  }, [apiEndpoint, refreshTrigger, searchParams, currentPage, rowsPerPage]);
+  }, [apiEndpoint, fetchApiEndPoint, refreshTrigger, searchParams, currentPage, rowsPerPage]);
 
   const refreshData = async () => {
     await fetchData();
@@ -118,7 +122,8 @@ export const useTable = <T extends { id: number }>({
       setData(remainingData);
       setSelectedRows([]);
       onNotify?.('Đã xóa thành công', 'success');
-    } catch (error) {
+    } 
+    catch (error) {
       console.error('Có lỗi khi xóa:', error);
       onNotify?.('Có lỗi xảy ra khi xóa', 'error');
     }

@@ -53,7 +53,7 @@ const Teachers = () => {
 
   const columns = [
     { key: 'maGv', label: 'Mã GV', style: { width: '100px' } },
-    { key: 'hoTen', label: 'Họ tên', style: { width: '200px' } },
+    { key: 'hoTen', label: 'Họ tên' },
     { key: 'boMon', label: 'Bộ môn', style: { width: '150px' } },
     { key: 'khoa', label: 'Khoa', style: { width: '150px' } },
     { key: 'trinhDo', label: 'Trình độ', style: { width: '100px' } },

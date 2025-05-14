@@ -26,6 +26,8 @@ const GroupPlan = () => {
 
   // Cấu hình các cột hiển thị trong bảng
   const columns = [
+    { key: 'maNhom', label: 'Mã nhóm', style: { width: '150px' } },
+    { key: 'hocPhanName', label: 'Tên học phần' },
     { key: 'maHp', label: 'Mã học phần', style: { width: '100px' } },
     { key: 'idNhom', label: 'Nhóm', style: { width: '80px' } },
     { key: 'hocPhanName', label: 'Tên học phần', style: { width: '200px' } },

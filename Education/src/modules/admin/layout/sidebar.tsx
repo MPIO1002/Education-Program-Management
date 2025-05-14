@@ -19,7 +19,7 @@ const Sidebar: React.FC = () => {
 
   return (
     <div
-      className={`bg-[#1b4587] text-white transition-all duration-300 ${
+      className={`bg-[#1b4587] text-white transition-all duration-300 overflow-hidden ${
         isExpanded ? 'w-60' : 'w-17'
       }`}
       onMouseEnter={() => setIsExpanded(true)}
@@ -31,9 +31,14 @@ const Sidebar: React.FC = () => {
             to={item.path}
             key={index}
             className="flex items-center w-full px-4 py-2 hover:bg-blue-950 rounded-lg cursor-pointer transition-colors duration-300"
+            style={{
+              minHeight: "40px"
+            }}
           >
             <FontAwesomeIcon icon={item.icon} className="text-xl" />
-            {isExpanded && <span className="ml-4 text-sm">{item.text}</span>}
+            <div style={{ minWidth: "200px" }}>
+              {isExpanded && <span className="ml-4 text-sm">{item.text}</span>}
+            </div>
           </Link>
         ))}
       </div>

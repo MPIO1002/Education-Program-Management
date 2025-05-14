@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useImperativeHandle } from 'react';
 import Pagination from './pagination';
 import Notification from './notification';
 import useDebounce from '../hooks/useDebounce';
@@ -15,6 +15,7 @@ interface TableProps {
         render?: (row: any) => React.ReactNode;
     }>;
     apiEndpoint: string;
+    fetchApiEndPoint?: string;
     filterKeys: string[];
     refreshTrigger: any;
     filter?: Record<string, string>;
@@ -23,6 +24,8 @@ interface TableProps {
         options: Array<{ value: string; label: string }>;
     };
     searchParams: Record<string, string>;
+    canSearch?: boolean;
+    finishLoadingCallback?: (data: any) => void;
     transformResponse?: (data: any[]) => any[];
 }
 
@@ -34,6 +37,9 @@ const Table: React.FC<TableProps> = ({
     selectFilter,
     searchParams: initialSearchParams,
     refreshTrigger,
+    fetchApiEndPoint,
+    canSearch = true,
+    finishLoadingCallback: isFinishLoading
     transformResponse,
 }) => {
     const [notification, setNotification] = React.useState<{ message: string; type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
@@ -59,6 +65,7 @@ const Table: React.FC<TableProps> = ({
         onNotify: (message, type) => {
             setNotification({ message, type }); // Lưu thông báo vào state
         },
+        fetchApiEndPoint,
     });
     const data = transformResponse ? transformResponse(rawData) : rawData;
     const [tempSearchTerm, setTempSearchTerm] = React.useState(searchParams[Object.keys(searchParams)[0]] || '');
@@ -92,6 +99,11 @@ const Table: React.FC<TableProps> = ({
         setTempSearchTerm(e.target.value);
     };
 
+    useEffect(() => {
+        if (isLoading) return;
+        if (!isFinishLoading) return;
+        isFinishLoading(data);
+    }, [isLoading])
 
     return (
         <div>
@@ -106,22 +118,25 @@ const Table: React.FC<TableProps> = ({
             <div className="p-4 bg-white rounded-lg shadow">
                 <div className="flex flex-col md:flex-row justify-between items-center mb-4">
                     {/* Input Tìm Kiếm */}
-                    <div className="mb-4">
-                        <input
-                            type="text"
-                            value={tempSearchTerm}
-                            onChange={handleSearchChange}
-                            placeholder="Tìm kiếm..."
-                            className="px-4 py-2 border rounded-lg w-[400px] focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-
-                    </div>
+                    {canSearch ? (
+                        <div className="mb-4">
+                            <input
+                                type="text"
+                                value={tempSearchTerm}
+                                onChange={handleSearchChange}
+                                placeholder="Tìm kiếm..."
+                                className="px-4 py-2 border rounded-lg w-[400px] focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
+    
+                        </div>
+                    ) : <div className="mb-4" />}
 
                     {/* Delete Button */}
                     <div className="mb-4">
                         <button
-                            className="bg-red-500 text-white px-4 py-2 rounded flex items-center gap-2 disabled:opacity-50"
+                            className={`bg-red-500 text-white px-4 py-2 rounded flex items-center gap-2 disabled:opacity-50 ${selectedRows.length === 0 ? "cursor-not-allowed" : "cursor-pointer"}`}
                             onClick={handleDelete}
+                            type='button'
                             disabled={selectedRows.length === 0}
                         >
                             <FontAwesomeIcon icon={faTrash} />
@@ -150,7 +165,8 @@ const Table: React.FC<TableProps> = ({
                         <table className="table-auto w-full border-collapse border border-gray-300">
                             <thead>
                                 <tr className="bg-[#1b4587] text-white">
-                                    <th className="border border-gray-300 px-4 py-2 text-left">
+                                    <th className="border border-gray-300 px-4 py-2 text-left"
+                                    style={{width: "46px", maxWidth: "46px"}}>
                                         <input
                                             type="checkbox"
                                             onChange={handleSelectAll}
@@ -199,7 +215,7 @@ const Table: React.FC<TableProps> = ({
                                             />
                                         </td>
                                         {columns.map((column) => (
-                                            <td key={column.key} className="border border-gray-300 px-4 py-2">
+                                            <td key={column.key} className="border border-gray-300 px-4 py-2" style={column.style}>
                                                 {column.render ? column.render(row) : row[column.key]}
                                             </td>
                                         ))}

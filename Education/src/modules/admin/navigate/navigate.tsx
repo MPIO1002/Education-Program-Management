@@ -48,7 +48,7 @@ const Navigate: React.FC = () => {
               }
             />
             <Route
-              path="/detail-syllabus"
+              path="/detailed-syllabus"
               element={
                 <ProtectedRoute>
                   <DetailedSyllabus />
