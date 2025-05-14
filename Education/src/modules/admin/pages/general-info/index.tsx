@@ -23,6 +23,10 @@ const GeneralInfo = () => {
     trangThai: string;
   } | null>(null);
 
+  const [filter, setFilter] = useState<Record<string, string>>({
+      heDaoTao: '',
+    });
+
   const [searchParams, setSearchParams] = useState<Record<string, string>>({
     tenCtdt: '',
   });
@@ -139,6 +143,15 @@ const GeneralInfo = () => {
         filterKeys={filterKeys}
         refreshTrigger={refreshTrigger}
         searchParams={searchParams}
+        filter={filter}
+        selectFilter={{
+          filterKey: 'heDaoTao',
+          options: [
+            { value: '', label: 'Tất cả' },
+            { value: 'Đại trà', label: 'Đại trà' },
+            { value: 'CLC', label: 'CLC' },
+          ],
+        }}
       />
 
       {isAddModalOpen && (
